@@ -1,0 +1,44 @@
+{
+    "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-25.0.4.1",
+    "java.jdt.ls.lombokSupport.enabled": false,
+    "java.search.scope": "all",
+    "maven.terminal.favorites": [
+        {
+            "command": "clean install",
+            "debug": false
+        },
+        {
+            "command": "-U clean install",
+            "debug": false
+        }
+    ],
+    "cucumberautocomplete.steps": [
+        "src/test/java/**/*.java"
+    ],
+    "cucumberautocomplete.syncfeatures": "src/test/resources/features/**/*.feature",
+    "cucumberautocomplete.strictGherkinCompletion": true,
+    "cucumberautocomplete.gherkinDefinitionPart": "@(Dado|Quando|Entao|E|Mas)\\(",
+    "cucumberautocomplete.customParameters": [
+        {
+            "parameter": "{int}",
+            "value": "(?:-?\\d+|<\\w+>)"
+        }
+    ],
+    "cucumberautocomplete.formatConfOverride": {
+        "Funcionalidade:": 0,
+        "Contexto:": 1,
+        "Cenário:": 1,
+        "Esquema do Cenário:": 1,
+        "Exemplos:": 2,
+        "Dado": 2,
+        "Quando": 2,
+        "Então": 2,
+        "E ": 2,
+        "Mas ": 2
+    },
+    "[feature]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false
+    }
+}

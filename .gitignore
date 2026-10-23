@@ -1,0 +1,38 @@
+# ============================================================
+# Arquivos que NÃO vão para o Git
+# (as pastas geradas usam "/" no começo: só ignora a pasta da raiz,
+#  e não um pacote Java com o mesmo nome, como "reports")
+# ============================================================
+
+# ---------- Build do Maven (gerado a cada execução) ----------
+target/
+
+# ---------- Saídas dos testes ----------
+/reports/
+/logs/
+*.log
+
+# ---------- Configuração local com dados reais ----------
+# O modelo config.properties.example é versionado
+config.properties
+.env
+*.env
+
+# ---------- IDEs ----------
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+bin/
+
+# ---------- Sistema operacional ----------
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---------- Diversos ----------
+*.tmp
+*.bak
+_backup_*.zip
