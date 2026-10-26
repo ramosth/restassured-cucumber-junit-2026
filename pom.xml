@@ -116,6 +116,13 @@
       <artifactId>datafaker</artifactId>
       <version>2.7.0</version>
     </dependency>
+
+    <!-- Extent Reports: relatório HTML com cada cenário e o log da API -->
+    <dependency>
+      <groupId>com.aventstack</groupId>
+      <artifactId>extentreports</artifactId>
+      <version>5.1.2</version>
+    </dependency>
   </dependencies>
 
   <build>
