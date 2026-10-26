@@ -65,6 +65,11 @@ public class UserSteps {
         context.setResponse(userClient.listByEmail(context.getUsuario().getEmail()));
     }
 
+    @Quando("excluo esse usuário")
+    public void excluoEsseUsuario() {
+        context.setResponse(userClient.delete(context.getUsuario().getId()));
+    }
+
     // ---------- Validações ----------
 
     /** Compara o que voltou da API com o que foi cadastrado no Dado. */
