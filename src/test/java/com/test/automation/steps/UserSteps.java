@@ -19,11 +19,13 @@ import io.restassured.response.Response;
 /**
  * Passos de usuários.
  *
- * "esse usuário"     no .feature = context.getUsuario()
- * "o outro usuário"  no .feature = context.getOutroUsuario()
+ * "esse usuário" no .feature = context.getUsuario()
+ * "o outro usuário" no .feature = context.getOutroUsuario()
  *
- * Corpos válidos usam o POJO Usuario. Corpos "quebrados" (booleano no lugar de texto,
- * campo a mais) usam um Map, porque o POJO não consegue representar um JSON errado.
+ * Corpos válidos usam o POJO Usuario. Corpos "quebrados" (booleano no lugar de
+ * texto,
+ * campo a mais) usam um Map, porque o POJO não consegue representar um JSON
+ * errado.
  */
 public class UserSteps {
 
@@ -64,7 +66,10 @@ public class UserSteps {
         cadastrar(novo);
     }
 
-    /** Um campo com valor inválido; os outros, válidos. Ex.: campo "email" igual a "fulano.qa.com" */
+    /**
+     * Um campo com valor inválido; os outros, válidos. Ex.: campo "email" igual a
+     * "fulano.qa.com"
+     */
     @Quando("cadastro um usuário com o campo {string} igual a {string}")
     public void cadastroUmUsuarioComOCampoIgualA(String campo, String valor) {
         Map<String, Object> corpo = comoMapa(DataFactory.novoUsuario(Perfil.CLIENTE));
@@ -123,7 +128,9 @@ public class UserSteps {
         context.setResponse(userClient.update(usuario.getId(), corpo));
     }
 
-    /** OBS-02: com id inexistente, a API cria um usuário novo. Ele entra na faxina. */
+    /**
+     * OBS-02: com id inexistente, a API cria um usuário novo. Ele entra na faxina.
+     */
     @Quando("altero o usuário de id {string} com dados válidos")
     public void alteroOUsuarioDeIdComDadosValidos(String id) {
         Response response = userClient.update(id, DataFactory.novoUsuario(Perfil.CLIENTE));
@@ -159,14 +166,19 @@ public class UserSteps {
                 () -> Assertions.assertEquals(esperado.getAdministrador(), atual.getAdministrador(), "administrador"));
     }
 
-    /** OBS-04: hoje a API devolve a senha, então este passo FALHA (cenário @expected-failure). */
+    /**
+     * OBS-04: hoje a API devolve a senha, então este passo FALHA
+     * (cenário @expected-failure).
+     */
     @Entao("a resposta não deve exibir a senha")
     public void aRespostaNaoDeveExibirASenha() {
         String senha = context.getResponse().jsonPath().getString("password");
         Assertions.assertNull(senha, "A API devolveu a senha do usuário em texto puro (OBS-04).");
     }
 
-    /** Confere a alteração com uma consulta NOVA (não confia só na mensagem do PUT). */
+    /**
+     * Confere a alteração com uma consulta NOVA (não confia só na mensagem do PUT).
+     */
     @Entao("a consulta desse usuário deve mostrar o nome {string}")
     public void aConsultaDesseUsuarioDeveMostrarONome(String nomeEsperado) {
         Response consulta = userClient.getById(context.getUsuario().getId());
@@ -175,7 +187,10 @@ public class UserSteps {
                 "O nome não foi alterado.");
     }
 
-    /** Confere a exclusão com uma consulta NOVA: o usuário não pode mais ser encontrado. */
+    /**
+     * Confere a exclusão com uma consulta NOVA: o usuário não pode mais ser
+     * encontrado.
+     */
     @Entao("esse usuário não deve mais existir")
     public void esseUsuarioNaoDeveMaisExistir() {
         Response consulta = userClient.getById(context.getUsuario().getId());
@@ -187,10 +202,11 @@ public class UserSteps {
     // ---------- Apoio ----------
 
     /**
-     * Cria o usuário e confere o 201 como PRÉ-CONDIÇÃO: se falhar, o cenário para no Dado
+     * Cria o usuário e confere o 201 como PRÉ-CONDIÇÃO: se falhar, o cenário para
+     * no Dado
      * com uma mensagem clara. Registra o id para a faxina do @After.
      */
-    private Usuario criarUsuario(Perfil perfil) {
+    public Usuario criarUsuario(Perfil perfil) {
         Usuario usuario = DataFactory.novoUsuario(perfil);
         Response response = userClient.create(usuario);
         Assertions.assertEquals(201, response.statusCode(),
@@ -201,21 +217,30 @@ public class UserSteps {
         return usuario;
     }
 
-    /** Cadastro como AÇÃO do cenário (o resultado pode ser 201 ou erro: quem confere é o Então). */
+    /**
+     * Cadastro como AÇÃO do cenário (o resultado pode ser 201 ou erro: quem confere
+     * é o Então).
+     */
     private void cadastrar(Object corpo) {
         Response response = userClient.create(corpo);
         registrarSeCriou(response);
         context.setResponse(response);
     }
 
-    /** Qualquer 201 cria um registro: ele entra na faxina, mesmo num cenário de erro. */
+    /**
+     * Qualquer 201 cria um registro: ele entra na faxina, mesmo num cenário de
+     * erro.
+     */
     private void registrarSeCriou(Response response) {
         if (response.statusCode() == 201) {
             context.registrarUsuario(response.jsonPath().getString("_id"));
         }
     }
 
-    /** Cópia do usuário SEM o id: no PUT o id vai na URL, e no corpo a API recusaria (RG-03). */
+    /**
+     * Cópia do usuário SEM o id: no PUT o id vai na URL, e no corpo a API recusaria
+     * (RG-03).
+     */
     private Usuario semId(Usuario usuario) {
         return new Usuario(usuario.getNome(), usuario.getEmail(), usuario.getPassword(), usuario.getAdministrador());
     }

@@ -20,6 +20,8 @@ Funcionalidade: Excluir produto
     Então o status da resposta deve ser 403
     E a mensagem deve ser "Rota exclusiva para administradores"
 
+  # @wip: precisa de carrinho (etapa 9). A tag sai quando ele estiver automatizado.
+  @wip
   Cenário: US09-CA03 - Exclusão de produto que está em um carrinho
     Dado que existe um produto cadastrado com preço 100 e estoque 10
     E que outro cliente tem um carrinho com 1 unidade desse produto

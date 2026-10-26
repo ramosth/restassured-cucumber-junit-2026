@@ -2,9 +2,11 @@ package com.test.automation.hooks;
 
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.markuputils.MarkupHelper;
+import com.test.automation.clients.ProductClient;
 import com.test.automation.clients.UserClient;
 import com.test.automation.context.TestContext;
 import com.test.automation.reports.ExtentReportManager;
+import com.test.automation.steps.AuthSteps;
 import com.test.automation.utils.ApiLogCapture;
 import com.test.automation.utils.Log;
 
@@ -18,22 +20,26 @@ import io.restassured.response.Response;
 /**
  * Ciclo de vida da execução.
  *
- *   @BeforeAll -> cria o Extent Report (uma vez por execução)
- *   @Before    -> registra o cenário no Extent e começa a capturar o log da API
- *   @After     -> anexa o log da API aos relatórios, registra o resultado e
- *                 apaga os dados criados pelo cenário
- *   @AfterAll  -> grava o Extent Report em disco
+ * @BeforeAll -> cria o Extent Report (uma vez por execução)
+ * @Before -> registra o cenário no Extent e começa a capturar o log da API
+ * @After -> anexa o log da API aos relatórios, registra o resultado e
+ *        apaga os dados criados pelo cenário
+ * @AfterAll -> grava o Extent Report em disco
  *
- * O log da API é o "print da tela" deste projeto: a requisição enviada e a
- * resposta recebida, anexadas ao Extent e ao relatório do Cucumber.
+ *           O log da API é o "print da tela" deste projeto: a requisição
+ *           enviada e a
+ *           resposta recebida, anexadas ao Extent e ao relatório do Cucumber.
  */
 public class Hooks {
 
     private final TestContext context;
+    private final AuthSteps authSteps;
     private final UserClient userClient = new UserClient();
+    private final ProductClient productClient = new ProductClient();
 
-    public Hooks(TestContext context) {
+    public Hooks(TestContext context, AuthSteps authSteps) {
         this.context = context;
+        this.authSteps = authSteps;
     }
 
     @BeforeAll
@@ -52,7 +58,8 @@ public class Hooks {
     public void setUp(Scenario scenario) {
         Log.info("Iniciando o cenário: " + scenario.getName());
 
-        // Registro do cenário no Extent; as tags (@usuarios...) viram categorias no relatório
+        // Registro do cenário no Extent; as tags (@usuarios...) viram categorias no
+        // relatório
         ExtentTest test = ExtentReportManager.createTest(scenario.getName());
         for (String tag : scenario.getSourceTagNames()) {
             test.assignCategory(tag.replace("@", ""));
@@ -64,7 +71,8 @@ public class Hooks {
 
     @After
     public void tearDown(Scenario scenario) {
-        // 1. Fecha o "caderno" ANTES da limpeza: as exclusões da faxina não fazem parte do teste
+        // 1. Fecha o "caderno" ANTES da limpeza: as exclusões da faxina não fazem parte
+        // do teste
         String logDaApi = ApiLogCapture.stop();
 
         // 2. Anexa o log aos dois relatórios
@@ -91,21 +99,45 @@ public class Hooks {
 
     /**
      * Exclui o que o cenário criou, NESTA ordem (a API bloqueia a ordem contrária):
-     *   1. carrinhos  -> entra na etapa 9 (cancelar a compra devolve o estoque)
-     *   2. produtos   -> entra na etapa 8
-     *   3. usuários
+     * 1. carrinhos -> entra na etapa 9 (cancelar a compra devolve o estoque)
+     * 2. produtos -> com o token do administrador de apoio
+     * 3. usuários -> por último (inclui o próprio administrador de apoio)
      *
      * Falha na limpeza NÃO derruba o cenário: só gera um aviso no log.
      * O resultado do cenário precisa refletir a regra testada, não a faxina.
      */
     private void limparDados() {
+        excluirProdutos();
+        excluirUsuarios();
+    }
+
+    private void excluirProdutos() {
+        if (context.getProdutosCriados().isEmpty()) {
+            return;
+        }
+        try {
+            String tokenAdmin = authSteps.tokenDeAdministradorDeApoio();
+            for (String id : context.getProdutosCriados()) {
+                Response response = productClient.delete(tokenAdmin, id);
+                if (response.statusCode() != 200) {
+                    Log.warn(
+                            "Limpeza: não foi possível excluir o produto " + id + ". Resposta: " + response.asString());
+                }
+            }
+        } catch (Throwable e) {
+            Log.warn("Limpeza: erro ao excluir os produtos: " + e.getMessage());
+        }
+    }
+
+    private void excluirUsuarios() {
         for (String id : context.getUsuariosCriados()) {
             try {
                 Response response = userClient.delete(id);
                 // 200 com "Registro excluído com sucesso" ou "Nenhum registro excluído"
                 // (o próprio cenário pode ter excluído o usuário, como no US05-CA01)
                 if (response.statusCode() != 200) {
-                    Log.warn("Limpeza: não foi possível excluir o usuário " + id + ". Resposta: " + response.asString());
+                    Log.warn(
+                            "Limpeza: não foi possível excluir o usuário " + id + ". Resposta: " + response.asString());
                 }
             } catch (Exception e) {
                 Log.warn("Limpeza: erro ao excluir o usuário " + id + ": " + e.getMessage());

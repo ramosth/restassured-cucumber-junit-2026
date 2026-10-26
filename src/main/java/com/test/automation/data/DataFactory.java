@@ -9,9 +9,10 @@ import net.datafaker.Faker;
  * Fábrica de dados de teste.
  *
  * Cada chamada devolve dados NOVOS e ÚNICOS. Isso é obrigatório na API porque:
- *   - o e-mail precisa ser único (RN-USU-02);
- *   - os dados ficam salvos entre execuções (requisitos.md, seção 2).
- * Com dados fixos, a 2ª execução já falharia com "Este email já está sendo usado".
+ * - o e-mail precisa ser único (RN-USU-02);
+ * - os dados ficam salvos entre execuções (requisitos.md, seção 2).
+ * Com dados fixos, a 2ª execução já falharia com "Este email já está sendo
+ * usado".
  */
 public final class DataFactory {
 
@@ -30,10 +31,27 @@ public final class DataFactory {
                 perfil.getAdministrador());
     }
 
+    /** Produto novo, com preço e estoque aleatórios. */
+    public static Produto novoProduto() {
+        return novoProduto(FAKER.number().numberBetween(10, 1000), FAKER.number().numberBetween(10, 100));
+    }
+
+    /**
+     * Produto novo com preço e estoque definidos pelo .feature.
+     * O nome precisa ser único (RN-PRO-04): nome aleatório + 8 caracteres de um
+     * UUID.
+     * Exemplo: "Cadeira Incrível de Aço 3f9a1c2b"
+     */
+    public static Produto novoProduto(int preco, int estoque) {
+        String nome = FAKER.commerce().productName() + " " + UUID.randomUUID().toString().substring(0, 8);
+        return new Produto(nome, preco, FAKER.commerce().material(), estoque);
+    }
+
     /**
      * E-mail único: 8 caracteres de um UUID (identificador aleatório).
      * Exemplo: qa_3f9a1c2b@serverest.com
-     * Não usa o nome gerado porque nomes com acento ("joão") não são aceitos em e-mail.
+     * Não usa o nome gerado porque nomes com acento ("joão") não são aceitos em
+     * e-mail.
      */
     public static String emailUnico() {
         return "qa_" + UUID.randomUUID().toString().substring(0, 8) + "@serverest.com";

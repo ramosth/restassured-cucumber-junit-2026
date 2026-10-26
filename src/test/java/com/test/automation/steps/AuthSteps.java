@@ -16,11 +16,13 @@ import io.cucumber.java.pt.Quando;
 import io.restassured.response.Response;
 
 /**
- * Passos de autenticação: login, token e "logado como".
+ * Passos de autenticação: login, token, "logado como" e o administrador de
+ * apoio.
  *
- * Recebe o UserSteps no construtor para REAPROVEITAR o "que existe um usuário {perfil} cadastrado"
+ * Recebe o UserSteps no construtor para REAPROVEITAR a criação de usuário
  * (criação + registro para a faxina), em vez de copiar o código.
- * O PicoContainer entrega a mesma instância do cenário, como faz com o TestContext.
+ * O PicoContainer entrega a mesma instância do cenário, como faz com o
+ * TestContext.
  */
 public class AuthSteps {
 
@@ -48,13 +50,13 @@ public class AuthSteps {
     @Dado("que estou logado como {perfil}")
     public void queEstouLogadoComo(Perfil perfil) {
         userSteps.queExisteUmUsuarioCadastrado(perfil); // cria, guarda como "esse usuário" e registra para a faxina
+        context.setToken(fazerLogin(context.getUsuario()));
+    }
 
-        Usuario usuario = context.getUsuario();
-        Response response = loginClient.login(credenciais(usuario.getEmail(), usuario.getPassword()));
-        Assertions.assertEquals(200, response.statusCode(),
-                "Pré-condição: não foi possível fazer login. Resposta: " + response.asString());
-
-        context.setToken(response.jsonPath().getString("authorization"));
+    /** Token escrito no .feature. Ex.: "Bearer token_invalido" (RN-PRO-02). */
+    @Dado("que estou com o token {string}")
+    public void queEstouComOToken(String token) {
+        context.setToken(token);
     }
 
     // ---------- Ações ----------
@@ -70,7 +72,10 @@ public class AuthSteps {
         context.setResponse(loginClient.login(credenciais(context.getUsuario().getEmail(), senha)));
     }
 
-    /** E-mail e senha escritos no .feature (inclusive em branco: "" vira texto vazio). */
+    /**
+     * E-mail e senha escritos no .feature (inclusive em branco: "" vira texto
+     * vazio).
+     */
     @Quando("faço login com o e-mail {string} e a senha {string}")
     public void facoLoginComOEmailEASenha(String email, String senha) {
         context.setResponse(loginClient.login(credenciais(email, senha)));
@@ -78,8 +83,8 @@ public class AuthSteps {
 
     /**
      * Envia o corpo SEM um dos campos (diferente de enviar em branco):
-     *   sem "email"    -> {"password": "teste"}
-     *   sem "password" -> {"email": "fulano@qa.com"}
+     * sem "email" -> {"password": "teste"}
+     * sem "password" -> {"email": "fulano@qa.com"}
      */
     @Quando("faço login sem o campo {string}")
     public void facoLoginSemOCampo(String campo) {
@@ -98,11 +103,34 @@ public class AuthSteps {
                 "O token deveria começar com '" + inicioEsperado + "', mas veio: " + token);
     }
 
-    // ---------- Apoio ----------
+    // ---------- Apoio (usado por outras classes) ----------
+
+    /**
+     * Token de um administrador "de apoio": cria produtos nos Dados e faz a faxina.
+     * É criado só na primeira vez que alguém pede, e reaproveitado no resto do
+     * cenário.
+     * Ele também é um usuário: entra na lista da faxina e é excluído no final.
+     */
+    public String tokenDeAdministradorDeApoio() {
+        if (context.getTokenAdminApoio() == null) {
+            Usuario admin = userSteps.criarUsuario(Perfil.ADMINISTRADOR);
+            context.setTokenAdminApoio(fazerLogin(admin));
+        }
+        return context.getTokenAdminApoio();
+    }
+
+    /** Faz login como pré-condição (confere o 200) e devolve o token. */
+    private String fazerLogin(Usuario usuario) {
+        Response response = loginClient.login(credenciais(usuario.getEmail(), usuario.getPassword()));
+        Assertions.assertEquals(200, response.statusCode(),
+                "Pré-condição: não foi possível fazer login. Resposta: " + response.asString());
+        return response.jsonPath().getString("authorization");
+    }
 
     /**
      * Corpo do login como Map: {"email": "...", "password": "..."}.
-     * LinkedHashMap mantém a ordem dos campos no JSON (fica mais fácil de ler no log).
+     * LinkedHashMap mantém a ordem dos campos no JSON (fica mais fácil de ler no
+     * log).
      */
     private Map<String, Object> credenciais(String email, String senha) {
         Map<String, Object> corpo = new LinkedHashMap<>();

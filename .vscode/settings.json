@@ -26,6 +26,10 @@
         {
             "parameter": "{int}",
             "value": "(?:-?\\d+|<\\w+>)"
+        },
+        {
+            "parameter": "{numero}",
+            "value": "(?:-?\\d+(?:\\.\\d+)?|<\\w+>)"
         }
     ],
     "cucumberautocomplete.formatConfOverride": {
