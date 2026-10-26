@@ -5,6 +5,7 @@ Funcionalidade: Consultar produtos
   Quero ver o catálogo e os detalhes de um produto
   Para escolher o que comprar
 
+  @smoke
   Cenário: US07-CA01 - Consulta do catálogo sem login
     Dado que não estou logado
     Quando consulto a lista de produtos

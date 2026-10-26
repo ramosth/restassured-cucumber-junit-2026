@@ -1,0 +1,118 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.test.automation</groupId>
+  <artifactId>restassured-cucumber-junit</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0</version>
+  <name>restassured-cucumber-junit</name>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- As dependências do Cucumber precisam estar SEMPRE na mesma versão.
+         Para atualizar, troque só aqui. -->
+    <cucumber.version>7.34.8</cucumber.version>
+    <!-- REST Assured: biblioteca que faz as requisições HTTP e lê as respostas -->
+    <restassured.version>6.0.1</restassured.version>
+    <!-- Versão do plugin Surefire (quem roda os testes no mvn test) -->
+    <surefire.version>3.5.4</surefire.version>
+  </properties>
+
+  <!-- BOM do JUnit: define a versão de TODAS as peças do JUnit 5 de uma vez.
+       Por isso as dependências do JUnit abaixo não têm <version>. -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.14.4</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+
+    <!-- ===================== API ===================== -->
+
+    <!-- REST Assured: given() / when() / then() para chamar a API -->
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>${restassured.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ===================== Cucumber + JUnit 5 ===================== -->
+
+    <!-- Cucumber: lê os .feature e liga cada frase ao método Java (@Dado, @Quando, @Entao) -->
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Motor do Cucumber dentro da plataforma do JUnit -->
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Injeção de dependência: entrega o mesmo TestContext (com a resposta e o token)
+         para os Hooks e para todas as classes de Steps -->
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-picocontainer</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- @Suite: transforma o TestRunner numa suíte que chama o motor do Cucumber -->
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Só a biblioteca de verificações (Assertions) do JUnit 5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ===================== Base reaproveitada ===================== -->
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.26.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.26.1</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- O Surefire encontra a classe TestRunner (padrão de nome "Test*") e
+           detecta sozinho o JUnit Platform; o @Suite dela chama o motor do Cucumber.
+           Para escolher os cenários: mvn test "-Dgroups=smoke" -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

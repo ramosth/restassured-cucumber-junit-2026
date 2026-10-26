@@ -1,0 +1,10 @@
+# ============================================================
+# Configurações do projeto
+# Modelo: copie este arquivo para config.properties (mesma pasta).
+# O config.properties fica fora do Git (.gitignore).
+# Qualquer chave pode ser trocada numa execução: mvn test -Dbase.uri=https://serverest.dev
+# ============================================================
+
+# ---------- API ----------
+# ServeRest local (Docker): docker run -d --rm --name serverest -p 3000:3000 paulogoncalvesbh/serverest:3.2.2
+base.uri=http://localhost:3000
