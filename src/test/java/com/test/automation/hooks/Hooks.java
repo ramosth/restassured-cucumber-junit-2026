@@ -2,6 +2,7 @@ package com.test.automation.hooks;
 
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.markuputils.MarkupHelper;
+import com.test.automation.clients.CartClient;
 import com.test.automation.clients.ProductClient;
 import com.test.automation.clients.UserClient;
 import com.test.automation.context.TestContext;
@@ -36,6 +37,7 @@ public class Hooks {
     private final AuthSteps authSteps;
     private final UserClient userClient = new UserClient();
     private final ProductClient productClient = new ProductClient();
+    private final CartClient cartClient = new CartClient();
 
     public Hooks(TestContext context, AuthSteps authSteps) {
         this.context = context;
@@ -99,7 +101,8 @@ public class Hooks {
 
     /**
      * Exclui o que o cenário criou, NESTA ordem (a API bloqueia a ordem contrária):
-     * 1. carrinhos -> entra na etapa 9 (cancelar a compra devolve o estoque)
+     * 1. carrinhos -> CANCELA a compra (devolve o estoque), com o token de cada
+     * dono
      * 2. produtos -> com o token do administrador de apoio
      * 3. usuários -> por último (inclui o próprio administrador de apoio)
      *
@@ -107,8 +110,25 @@ public class Hooks {
      * O resultado do cenário precisa refletir a regra testada, não a faxina.
      */
     private void limparDados() {
+        cancelarCarrinhos();
         excluirProdutos();
         excluirUsuarios();
+    }
+
+    private void cancelarCarrinhos() {
+        for (String tokenDoDono : context.getCarrinhosCriados()) {
+            try {
+                Response response = cartClient.cancelPurchase(tokenDoDono);
+                // 200 com "...Estoque dos produtos reabastecido" ou "Não foi encontrado
+                // carrinho..."
+                // (o próprio cenário pode ter concluído ou cancelado a compra)
+                if (response.statusCode() != 200) {
+                    Log.warn("Limpeza: não foi possível cancelar um carrinho. Resposta: " + response.asString());
+                }
+            } catch (Exception e) {
+                Log.warn("Limpeza: erro ao cancelar um carrinho: " + e.getMessage());
+            }
+        }
     }
 
     private void excluirProdutos() {

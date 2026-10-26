@@ -120,7 +120,7 @@ public class AuthSteps {
     }
 
     /** Faz login como pré-condição (confere o 200) e devolve o token. */
-    private String fazerLogin(Usuario usuario) {
+    public String fazerLogin(Usuario usuario) {
         Response response = loginClient.login(credenciais(usuario.getEmail(), usuario.getPassword()));
         Assertions.assertEquals(200, response.statusCode(),
                 "Pré-condição: não foi possível fazer login. Resposta: " + response.asString());

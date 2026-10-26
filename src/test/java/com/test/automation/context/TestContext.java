@@ -21,6 +21,7 @@ import io.restassured.response.Response;
  * produtos e faz a faxina)
  * usuario / outroUsuario -> "esse usuário" / "o outro usuário" do .feature
  * produto / outroProduto -> "esse produto" / "o outro produto" do .feature
+ * carrinhoId -> "esse carrinho" do .feature
  *
  * Registro para a limpeza: todo registro criado entra numa lista, e o @After
  * dos Hooks apaga tudo no final (mesmo se o cenário falhar).
@@ -35,10 +36,14 @@ public class TestContext {
     private Produto produto;
     private Produto outroProduto;
     private ExtentTest extentTest;
+    private String carrinhoId;
 
     // ids criados neste cenário (para o @After excluir)
     private final List<String> usuariosCriados = new ArrayList<>();
     private final List<String> produtosCriados = new ArrayList<>();
+    // tokens dos DONOS dos carrinhos criados: cancelar a compra precisa do token,
+    // não do id
+    private final List<String> carrinhosCriados = new ArrayList<>();
 
     public Response getResponse() {
         return response;
@@ -105,6 +110,15 @@ public class TestContext {
         this.extentTest = extentTest;
     }
 
+    /** "esse carrinho" do .feature: o id do último carrinho criado no cenário. */
+    public String getCarrinhoId() {
+        return carrinhoId;
+    }
+
+    public void setCarrinhoId(String carrinhoId) {
+        this.carrinhoId = carrinhoId;
+    }
+
     // ---------- Registro para a limpeza ----------
 
     /** Chame logo depois de qualquer cadastro de usuário que deu certo. */
@@ -123,5 +137,17 @@ public class TestContext {
 
     public List<String> getProdutosCriados() {
         return produtosCriados;
+    }
+
+    /**
+     * Chame logo depois de qualquer carrinho criado, com o token do DONO do
+     * carrinho.
+     */
+    public void registrarCarrinho(String tokenDoDono) {
+        carrinhosCriados.add(tokenDoDono);
+    }
+
+    public List<String> getCarrinhosCriados() {
+        return carrinhosCriados;
     }
 }
