@@ -123,6 +123,16 @@
       <artifactId>extentreports</artifactId>
       <version>5.1.2</version>
     </dependency>
+
+    <!-- Validação de contrato: confere a resposta contra um JSON Schema
+    (src/test/resources/schemas).
+         Mesma versão do REST Assured, por isso usa a mesma propriedade. -->
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>${restassured.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

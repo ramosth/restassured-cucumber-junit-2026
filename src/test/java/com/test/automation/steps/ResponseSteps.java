@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import com.test.automation.context.TestContext;
 
 import io.cucumber.java.pt.Entao;
+import io.restassured.module.jsv.JsonSchemaValidator;
 import io.restassured.response.Response;
 
 /**
@@ -82,4 +83,19 @@ public class ResponseSteps {
         Assertions.assertNotNull(id, "A resposta não trouxe o _id. Corpo: " + context.getResponse().asString());
         Assertions.assertNotEquals(idInformado, id, "O registro foi criado com o mesmo id da URL.");
     }
+
+    /**
+     * Teste de CONTRATO: a resposta precisa seguir o JSON Schema de
+     * src/test/resources/schemas/<nome>.json.
+     * Confere a ESTRUTURA (campos, tipos, formatos), não os valores.
+     * Se falhar, a mensagem diz qual campo quebrou o contrato e por quê.
+     */
+    @Entao("a resposta deve seguir o contrato {string}")
+    public void aRespostaDeveSeguirOContrato(String contrato) {
+        context.getResponse()
+                .then()
+                .assertThat()
+                .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schemas/" + contrato + ".json"));
+    }
+
 }
