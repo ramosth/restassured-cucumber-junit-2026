@@ -101,6 +101,21 @@
       <artifactId>log4j-api</artifactId>
       <version>2.26.1</version>
     </dependency>
+
+    <!-- Jackson: converte objetos Java (POJOs) em JSON e JSON em objetos.
+         O REST Assured usa sozinho quando fazemos body(usuario) ou response.as(Usuario.class). -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.22.4</version>
+    </dependency>
+
+    <!-- Datafaker: gera dados aleatórios (nomes, senhas) para cada cenário ter dados próprios -->
+    <dependency>
+      <groupId>net.datafaker</groupId>
+      <artifactId>datafaker</artifactId>
+      <version>2.7.0</version>
+    </dependency>
   </dependencies>
 
   <build>

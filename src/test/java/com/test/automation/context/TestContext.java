@@ -1,5 +1,7 @@
 package com.test.automation.context;
 
+import com.test.automation.data.Usuario;
+
 import io.restassured.response.Response;
 
 /**
@@ -7,19 +9,16 @@ import io.restassured.response.Response;
  *
  * O PicoContainer cria um TestContext novo no início de cada cenário e entrega
  * a MESMA instância para todas as classes que pedirem por ele no construtor.
- * Assim o @Quando guarda a resposta e o @Entao confere essa mesma resposta,
- * mesmo estando em classes diferentes.
  *
- * Na UI a mochila levava o navegador (WebDriver). Na API ela leva:
  *   response -> a última resposta recebida da API (status, corpo, cabeçalhos)
  *   token    -> o "Bearer ..." do usuário logado (null = não logado)
- *
- * Na etapa 5 ela ganha os dados criados no cenário (usuário, produto, carrinho).
+ *   usuario  -> "esse usuário" do .feature: o último usuário criado no cenário (com o id)
  */
 public class TestContext {
 
     private Response response;
     private String token;
+    private Usuario usuario;
 
     public Response getResponse() {
         return response;
@@ -35,5 +34,13 @@ public class TestContext {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

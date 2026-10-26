@@ -20,6 +20,10 @@
     "cucumberautocomplete.gherkinDefinitionPart": "@(Dado|Quando|Entao|E|Mas)\\(",
     "cucumberautocomplete.customParameters": [
         {
+            "parameter": "{perfil}",
+            "value": "(?:cliente|administrador|<\\w+>)"
+        },
+        {
             "parameter": "{int}",
             "value": "(?:-?\\d+|<\\w+>)"
         }
