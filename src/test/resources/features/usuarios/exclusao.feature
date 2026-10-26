@@ -12,6 +12,8 @@ Funcionalidade: Excluir usuário
     E a mensagem deve ser "Registro excluído com sucesso"
     E esse usuário não deve mais existir
 
+  # @wip: precisa de produto e carrinho (etapas 8 e 9). A tag sai quando eles estiverem automatizados.
+  @wip
   Cenário: US05-CA02 - Exclusão de usuário com carrinho
     Dado que estou logado como cliente
     E que existe um produto cadastrado com preço 100 e estoque 10

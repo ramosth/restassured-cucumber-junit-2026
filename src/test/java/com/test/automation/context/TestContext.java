@@ -28,6 +28,7 @@ public class TestContext {
     private String token;
     private Usuario usuario;
     private ExtentTest extentTest;
+    private Usuario outroUsuario;
 
     // ids dos usuários criados neste cenário (para o @After excluir)
     private final List<String> usuariosCriados = new ArrayList<>();
@@ -63,6 +64,18 @@ public class TestContext {
 
     public void setExtentTest(ExtentTest extentTest) {
         this.extentTest = extentTest;
+    }
+
+    /**
+     * "o outro usuário" do .feature: um segundo usuário, usado nas regras de
+     * duplicidade.
+     */
+    public Usuario getOutroUsuario() {
+        return outroUsuario;
+    }
+
+    public void setOutroUsuario(Usuario outroUsuario) {
+        this.outroUsuario = outroUsuario;
     }
 
     // ---------- Registro para a limpeza ----------

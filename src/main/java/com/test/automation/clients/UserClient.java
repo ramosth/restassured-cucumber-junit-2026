@@ -22,9 +22,9 @@ public class UserClient extends BaseClient {
         return request()
                 .body(body)
                 .when()
-                    .post(USUARIOS)
+                .post(USUARIOS)
                 .then()
-                    .extract().response();
+                .extract().response();
     }
 
     /** GET /usuarios/{id} */
@@ -32,9 +32,9 @@ public class UserClient extends BaseClient {
         Log.info("GET " + USUARIOS + "/" + id);
         return request()
                 .when()
-                    .get(USUARIO_POR_ID, id)
+                .get(USUARIO_POR_ID, id)
                 .then()
-                    .extract().response();
+                .extract().response();
     }
 
     /** GET /usuarios?email=... */
@@ -43,9 +43,25 @@ public class UserClient extends BaseClient {
         return request()
                 .queryParam("email", email)
                 .when()
-                    .get(USUARIOS)
+                .get(USUARIOS)
                 .then()
-                    .extract().response();
+                .extract().response();
+    }
+
+    /**
+     * PUT /usuarios/{id}: o id vai na URL e o corpo leva TODOS os campos (sem o
+     * _id).
+     * Atenção (OBS-02): se o id não existir, a API cria um usuário novo, com outro
+     * id.
+     */
+    public Response update(String id, Object body) {
+        Log.info("PUT " + USUARIOS + "/" + id);
+        return request()
+                .body(body)
+                .when()
+                .put(USUARIO_POR_ID, id)
+                .then()
+                .extract().response();
     }
 
     /** DELETE /usuarios/{id} */
@@ -53,8 +69,8 @@ public class UserClient extends BaseClient {
         Log.info("DELETE " + USUARIOS + "/" + id);
         return request()
                 .when()
-                    .delete(USUARIO_POR_ID, id)
+                .delete(USUARIO_POR_ID, id)
                 .then()
-                    .extract().response();
+                .extract().response();
     }
 }
