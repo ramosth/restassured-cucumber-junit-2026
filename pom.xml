@@ -38,12 +38,13 @@
 
     <!-- ===================== API ===================== -->
 
-    <!-- REST Assured: given() / when() / then() para chamar a API -->
+    <!-- REST Assured: given() / when() / then() para chamar a API.
+         Sem <scope>test</scope> porque os Clients ficam em src/main/java
+         (o mesmo lugar dos Page Objects nos projetos de UI). -->
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <version>${restassured.version}</version>
-      <scope>test</scope>
     </dependency>
 
     <!-- ===================== Cucumber + JUnit 5 ===================== -->
