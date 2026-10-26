@@ -16,7 +16,8 @@ import io.restassured.response.Response;
 /**
  * Passos de usuários.
  *
- * "esse usuário" no .feature = context.getUsuario(): o último usuário criado no cenário.
+ * "esse usuário" no .feature = context.getUsuario(): o último usuário criado no
+ * cenário.
  */
 public class UserSteps {
 
@@ -32,7 +33,8 @@ public class UserSteps {
     /**
      * Cria um usuário pela API e guarda no contexto.
      * A verificação do 201 aqui é de PRÉ-CONDIÇÃO: se o cadastro falhar, o cenário
-     * para logo no Dado, com uma mensagem clara, em vez de falhar lá na frente sem explicação.
+     * para logo no Dado, com uma mensagem clara, em vez de falhar lá na frente sem
+     * explicação.
      */
     @Dado("que existe um usuário {perfil} cadastrado")
     public void queExisteUmUsuarioCadastrado(Perfil perfil) {
@@ -43,6 +45,7 @@ public class UserSteps {
 
         usuario.setId(response.jsonPath().getString("_id"));
         context.setUsuario(usuario);
+        context.registrarUsuario(usuario.getId()); // o @After vai excluir no final
     }
 
     // ---------- Ações ----------
@@ -78,7 +81,10 @@ public class UserSteps {
                 () -> Assertions.assertEquals(esperado.getAdministrador(), atual.getAdministrador(), "administrador"));
     }
 
-    /** OBS-04: hoje a API devolve a senha, então este passo FALHA (cenário @expected-failure). */
+    /**
+     * OBS-04: hoje a API devolve a senha, então este passo FALHA
+     * (cenário @expected-failure).
+     */
     @Entao("a resposta não deve exibir a senha")
     public void aRespostaNaoDeveExibirASenha() {
         String senha = context.getResponse().jsonPath().getString("password");
