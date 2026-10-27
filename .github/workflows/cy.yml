@@ -1,0 +1,164 @@
+# ============================================================
+# CI - RestAssured + Cucumber BDD + JUnit 5 (API ServeRest)
+#
+# Quando roda:
+#   - a cada push e pull request na branch master (tags padrão: regression);
+#   - manualmente pela aba "Actions" > "CI - RestAssured + Cucumber (JUnit 5)" > "Run workflow",
+#     informando as tags.
+#
+# O que faz:
+#   1. sobe a API ServeRest 3.2.2 num container Docker (service container), com os dados de fábrica;
+#   2. instala o Java 17 e baixa as dependências do Maven (com cache);
+#   3. espera a ServeRest responder;
+#   4. cria o config.properties a partir do modelo (o arquivo real fica fora do Git);
+#   5. roda os cenários das tags escolhidas;
+#   6. publica os relatórios (Extent e Cucumber) e os logs como "artifacts";
+#   7. envia o resultado por e-mail com os relatórios em anexo, SE os segredos
+#      EMAIL_* estiverem cadastrados (Settings > Secrets and variables > Actions).
+#
+# Filtro de tags: usa as tags do JUnit (-Dgroups), SEM o @.
+#   regression | smoke | login | usuarios | produtos & !expected-failure | carrinhos | contrato
+#
+# O envio de e-mail é responsabilidade da esteira: o framework não tem nada de e-mail.
+# ============================================================
+name: CI - RestAssured + Cucumber (JUnit 5)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: "Tags do JUnit, sem @. Ex.: regression | smoke | login | usuarios | expected-failure"
+        type: string
+        default: "regression"
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # A API testada sobe junto com a esteira, num container (o mesmo "docker run" do dia a dia).
+    # O GitHub liga o container antes dos passos e desliga no final: cada execução começa do zero.
+    services:
+      serverest:
+        image: paulogoncalvesbh/serverest:3.2.2
+        ports:
+          - 3000:3000
+
+    env:
+      # Em push/PR os inputs não existem, então usamos o valor padrão
+      TAGS: ${{ inputs.tags || 'regression' }}
+      # "true" só se a senha de app foi cadastrada nos segredos (o valor da senha não fica aqui)
+      EMAIL_CONFIGURADO: ${{ secrets.EMAIL_APP_PASSWORD != '' }}
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v5
+
+      - name: Instalar Java 17 (com cache do Maven)
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      # O GitHub liga o container, mas não sabe quando a API terminou de subir.
+      # Pergunta a cada 2 segundos (até 30 vezes) antes de rodar os testes.
+      - name: Esperar a ServeRest ficar pronta
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/usuarios > /dev/null; then
+              echo "ServeRest pronta (tentativa $i)."
+              exit 0
+            fi
+            echo "Aguardando a ServeRest... (tentativa $i)"
+            sleep 2
+          done
+          echo "A ServeRest não respondeu em 60 segundos."
+          exit 1
+
+      - name: Criar config.properties a partir do modelo
+        run: cp src/test/resources/config.properties.example src/test/resources/config.properties
+
+      # As aspas em volta de -Dgroups protegem os espaços e os símbolos & | !
+      - name: Rodar os cenários "${{ env.TAGS }}"
+        run: mvn -B clean test "-Dgroups=$TAGS"
+
+      # Lê os totais dos relatórios do JUnit (TEST-*.xml do Surefire) para o assunto e o corpo do e-mail.
+      # Cada arquivo tem uma linha <testsuite tests=".." failures=".." errors=".." skipped="..">.
+      # O JUnit não informa "passou": a conta é total - falhas - erros - ignorados.
+      - name: Resumir resultados
+        id: resumo
+        if: always()
+        run: |
+          FILES=$(ls target/surefire-reports/TEST-*.xml 2>/dev/null || true)
+          if [ -z "$FILES" ]; then
+            # Sem relatório (ex.: erro de compilação): o e-mail mostra "-"
+            for k in total passed failed skipped; do echo "$k=-" >> "$GITHUB_OUTPUT"; done
+            exit 0
+          fi
+          # Soma um atributo do <testsuite> em todos os arquivos TEST-*.xml
+          soma() {
+            grep -h -o '<testsuite [^>]*>' $FILES | grep -o " $1=\"[0-9]*\"" | grep -o '[0-9]*' | awk '{s+=$1} END {print s+0}'
+          }
+          TOTAL=$(soma tests)
+          FALHAS=$(soma failures)
+          ERROS=$(soma errors)
+          IGNORADOS=$(soma skipped)
+          FALHOU=$((FALHAS + ERROS))
+          PASSOU=$((TOTAL - FALHOU - IGNORADOS))
+          echo "Total: $TOTAL | Passou: $PASSOU | Falhou: $FALHOU | Ignorado: $IGNORADOS"
+          {
+            echo "total=$TOTAL"
+            echo "passed=$PASSOU"
+            echo "failed=$FALHOU"
+            echo "skipped=$IGNORADOS"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publicar relatórios e logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: resultados-${{ github.run_number }}
+          path: |
+            reports/
+            logs/
+            target/surefire-reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Enviar relatório por e-mail
+        if: always() && env.EMAIL_CONFIGURADO == 'true'
+        uses: dawidd6/action-send-mail@v22
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_SENDER }}
+          password: ${{ secrets.EMAIL_APP_PASSWORD }}
+          from: QA Automation <${{ secrets.EMAIL_SENDER }}>
+          to: ${{ secrets.EMAIL_RECIPIENTS }}
+          subject: "[${{ job.status == 'success' && 'PASSOU' || 'FALHOU' }}] RestAssured + Cucumber (API) - ${{ env.TAGS }} - ${{ steps.resumo.outputs.passed }} passou, ${{ steps.resumo.outputs.failed }} falhou, ${{ steps.resumo.outputs.skipped }} ignorado(s)"
+          html_body: |
+            <h2 style="color:${{ job.status == 'success' && '#27ae60' || '#c0392b' }}">Execução ${{ job.status == 'success' && 'PASSOU' || 'FALHOU' }}</h2>
+            <p>
+              <b>Tags:</b> ${{ env.TAGS }}<br>
+              <b>API:</b> ServeRest 3.2.2 (container Docker na esteira)<br>
+              <b>Disparado por:</b> ${{ github.actor }} (${{ github.event_name }})
+            </p>
+            <table border="1" cellpadding="6" style="border-collapse:collapse">
+              <tr><th>Passou</th><th>Falhou</th><th>Ignorado</th><th>Total</th></tr>
+              <tr align="center">
+                <td>${{ steps.resumo.outputs.passed }}</td>
+                <td>${{ steps.resumo.outputs.failed }}</td>
+                <td>${{ steps.resumo.outputs.skipped }}</td>
+                <td>${{ steps.resumo.outputs.total }}</td>
+              </tr>
+            </table>
+            <p>Os relatórios Extent e Cucumber estão em anexo.
+               Logs: <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">execução no GitHub Actions</a> (seção Artifacts).</p>
+            <p>Atenciosamente,<br>Thamires, QA Team.</p>
+          attachments: reports/*.html

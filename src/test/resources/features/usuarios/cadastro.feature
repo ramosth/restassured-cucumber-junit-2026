@@ -1,5 +1,5 @@
 # language: pt
-@usuarios @usuarios-cadastro
+@usuarios @usuarios-cadastro @regression
 Funcionalidade: Cadastrar usuário
   Como visitante
   Quero criar a minha conta como cliente ou administrador

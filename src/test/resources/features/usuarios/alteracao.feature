@@ -1,5 +1,5 @@
 # language: pt
-@usuarios @usuarios-alteracao
+@usuarios @usuarios-alteracao @regression
 Funcionalidade: Alterar usuário
   Como usuário cadastrado
   Quero alterar os meus dados

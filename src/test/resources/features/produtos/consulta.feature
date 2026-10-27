@@ -1,5 +1,5 @@
 # language: pt
-@produtos @produtos-consulta
+@produtos @produtos-consulta @regression
 Funcionalidade: Consultar produtos
   Como visitante
   Quero ver o catálogo e os detalhes de um produto

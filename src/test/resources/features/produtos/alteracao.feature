@@ -1,5 +1,5 @@
 # language: pt
-@produtos @produtos-alteracao
+@produtos @produtos-alteracao @regression
 Funcionalidade: Alterar produto
   Como administrador
   Quero alterar preço, descrição e estoque de um produto

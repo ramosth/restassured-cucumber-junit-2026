@@ -1,5 +1,5 @@
 # language: pt
-@carrinhos @carrinhos-cancelar
+@carrinhos @carrinhos-cancelar @regression
 Funcionalidade: Cancelar compra
   Como cliente com carrinho
   Quero cancelar a compra

@@ -1,5 +1,5 @@
 # language: pt
-@contrato
+@contrato @regression
 Funcionalidade: Contrato das respostas
   Como time que consome a API
   Quero que o formato das respostas (campos e tipos) não mude sem aviso

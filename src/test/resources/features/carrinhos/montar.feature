@@ -1,5 +1,5 @@
 # language: pt
-@carrinhos @carrinhos-montar
+@carrinhos @carrinhos-montar @regression
 Funcionalidade: Montar carrinho
   Como cliente logado
   Quero colocar produtos no meu carrinho

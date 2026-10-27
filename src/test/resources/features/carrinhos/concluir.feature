@@ -1,5 +1,5 @@
 # language: pt
-@carrinhos @carrinhos-concluir
+@carrinhos @carrinhos-concluir @regression
 Funcionalidade: Concluir compra
   Como cliente com carrinho
   Quero concluir a compra

@@ -1,5 +1,5 @@
 # language: pt
-@usuarios @usuarios-exclusao
+@usuarios @usuarios-exclusao @regression
 Funcionalidade: Excluir usuário
   Como usuário cadastrado
   Quero excluir a minha conta

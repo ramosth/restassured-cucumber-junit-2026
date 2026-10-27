@@ -1,5 +1,5 @@
 # language: pt
-@produtos @produtos-exclusao
+@produtos @produtos-exclusao @regression
 Funcionalidade: Excluir produto
   Como administrador
   Quero retirar produtos do catálogo

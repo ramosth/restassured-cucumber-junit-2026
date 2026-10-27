@@ -5,22 +5,26 @@ Funcionalidade: Consultar usuários
   Quero listar usuários e buscar um usuário pelo id
   Para conferir os dados cadastrados
 
+  @regression
   Cenário: US03-CA01 - Busca por id existente
     Dado que existe um usuário cliente cadastrado
     Quando consulto esse usuário pelo id
     Então o status da resposta deve ser 200
     E o usuário retornado deve ter os mesmos dados do cadastro
 
+  @regression
   Cenário: US03-CA02 - Busca por id inexistente
     Quando consulto o usuário de id "IdInexistente000"
     Então o status da resposta deve ser 400
     E a mensagem deve ser "Usuário não encontrado"
 
+  @regression
   Cenário: US03-CA03 - Busca com id em formato inválido
     Quando consulto o usuário de id "123"
     Então o status da resposta deve ser 400
     E o erro do campo "id" deve ser "id deve ter exatamente 16 caracteres alfanuméricos"
 
+  @regression
   Cenário: US03-CA04 - Listagem filtrada por e-mail
     Dado que existe um usuário cliente cadastrado
     Quando listo os usuários filtrando pelo e-mail desse usuário

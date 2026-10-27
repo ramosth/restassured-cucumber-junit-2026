@@ -1,5 +1,5 @@
 # language: pt
-@login
+@login @regression
 Funcionalidade: Login
   Como usuário cadastrado (cliente ou administrador)
   Quero entrar com meu e-mail e senha
