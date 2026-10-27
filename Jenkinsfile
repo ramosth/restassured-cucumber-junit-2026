@@ -53,6 +53,11 @@ pipeline {
         SERVEREST_IMAGEM    = 'paulogoncalvesbh/serverest:3.2.2'
         SERVEREST_CONTAINER = 'serverest-jenkins'
         SERVEREST_PORTA     = '3100'
+
+        // Faz o Maven e os testes escreverem o console em UTF-8 (o mesmo que o Jenkins usa para ler).
+        // Sem isso, no Windows o Java escreve em Cp1252 e os acentos aparecem como "�" no Console Output.
+        // stdout/stderr.encoding: saída do console | file.encoding: arquivos e textos em geral
+        JAVA_TOOL_OPTIONS = '-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8'
     }
 
     stages {
