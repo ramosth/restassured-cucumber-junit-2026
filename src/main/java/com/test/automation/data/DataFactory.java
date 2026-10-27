@@ -27,7 +27,7 @@ public final class DataFactory {
         return new Usuario(
                 FAKER.name().fullName(),
                 emailUnico(),
-                FAKER.internet().password(8, 16),
+                FAKER.regexify("[a-z0-9]{10}"),
                 perfil.getAdministrador());
     }
 
