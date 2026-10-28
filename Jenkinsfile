@@ -130,7 +130,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'email-recipients', variable: 'EMAIL_RECIPIENTS')]) {
                         emailext(
                             to: env.EMAIL_RECIPIENTS,
-                            subject: "[${status}] RestAssured + Cucumber (API) - ${{ env.AMBIENTE }} - ${{ env.TAGS }} - build #${env.BUILD_NUMBER}",
+                            subject: "[${status}] RestAssured + Cucumber (API) - ${params.AMBIENTE} - ${params.TAGS} - build #${env.BUILD_NUMBER}",
                             mimeType: 'text/html',
                             attachmentsPattern: 'reports/*.html',
                             // \${TEST_COUNTS...} tem a barra para o Groovy não interpretar:
