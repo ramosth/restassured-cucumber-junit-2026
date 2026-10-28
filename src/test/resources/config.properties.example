@@ -7,4 +7,13 @@
 
 # ---------- API ----------
 # ServeRest local (Docker): docker run -d --rm --name serverest -p 3000:3000 paulogoncalvesbh/serverest:3.2.2
-base.uri=http://localhost:3000
+
+# Ambiente padrão. Troque na execução: mvn test -Denv=staging
+#   local    -> Docker na sua máquina
+#   staging  -> instância de testes pública da ServeRest
+#   producao -> serverest.dev (pública, compartilhada, com limite de requisições)
+env=local
+
+base.uri.local=http://localhost:3000
+base.uri.staging=https://staging.serverest.dev
+base.uri.producao=https://serverest.dev

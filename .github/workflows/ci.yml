@@ -30,6 +30,11 @@ on:
     branches: [master]
   workflow_dispatch:
     inputs:
+      ambiente:
+        description: "Ambiente testado"
+        type: choice
+        options: [local, staging, producao]
+        default: local
       tags:
         description: "Tags do JUnit, sem @. Ex.: regression | smoke | login | usuarios | expected-failure"
         type: string
@@ -51,6 +56,7 @@ jobs:
     env:
       # Em push/PR os inputs não existem, então usamos o valor padrão
       TAGS: ${{ inputs.tags || 'regression' }}
+      AMBIENTE: ${{ inputs.ambiente || 'local' }}
       # "true" só se a senha de app foi cadastrada nos segredos (o valor da senha não fica aqui)
       EMAIL_CONFIGURADO: ${{ secrets.EMAIL_APP_PASSWORD != '' }}
 
@@ -68,6 +74,7 @@ jobs:
       # O GitHub liga o container, mas não sabe quando a API terminou de subir.
       # Pergunta a cada 2 segundos (até 30 vezes) antes de rodar os testes.
       - name: Esperar a ServeRest ficar pronta
+        if: env.AMBIENTE == 'local'
         run: |
           for i in $(seq 1 30); do
             if curl -sf http://localhost:3000/usuarios > /dev/null; then
@@ -85,7 +92,7 @@ jobs:
 
       # As aspas em volta de -Dgroups protegem os espaços e os símbolos & | !
       - name: Rodar os cenários "${{ env.TAGS }}"
-        run: mvn -B clean test "-Dgroups=$TAGS"
+        run: mvn -B clean test "-Dgroups=$TAGS" -Denv="$AMBIENTE"
 
       # Lê os totais dos relatórios do JUnit (TEST-*.xml do Surefire) para o assunto e o corpo do e-mail.
       # Cada arquivo tem uma linha <testsuite tests=".." failures=".." errors=".." skipped="..">.
@@ -141,12 +148,12 @@ jobs:
           password: ${{ secrets.EMAIL_APP_PASSWORD }}
           from: QA Automation <${{ secrets.EMAIL_SENDER }}>
           to: ${{ secrets.EMAIL_RECIPIENTS }}
-          subject: "[${{ job.status == 'success' && 'PASSOU' || 'FALHOU' }}] RestAssured + Cucumber (API) - ${{ env.TAGS }} - ${{ steps.resumo.outputs.passed }} passou, ${{ steps.resumo.outputs.failed }} falhou, ${{ steps.resumo.outputs.skipped }} ignorado(s)"
+          subject: "[${{ job.status == 'success' && 'PASSOU' || 'FALHOU' }}] RestAssured + Cucumber (API) - ${{ env.AMBIENTE }} - ${{ env.TAGS }} - ${{ steps.resumo.outputs.passed }} passou, ${{ steps.resumo.outputs.failed }} falhou, ${{ steps.resumo.outputs.skipped }} ignorado(s)"
           html_body: |
             <h2 style="color:${{ job.status == 'success' && '#27ae60' || '#c0392b' }}">Execução ${{ job.status == 'success' && 'PASSOU' || 'FALHOU' }}</h2>
             <p>
               <b>Tags:</b> ${{ env.TAGS }}<br>
-              <b>API:</b> ServeRest 3.2.2 (container Docker na esteira)<br>
+              <b>Ambiente:</b> ${{ env.AMBIENTE }}<br>
               <b>Disparado por:</b> ${{ github.actor }} (${{ github.event_name }})
             </p>
             <table border="1" cellpadding="6" style="border-collapse:collapse">

@@ -6,6 +6,7 @@ import java.util.Date;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import com.test.automation.config.ApiConfig;
 import com.test.automation.config.ConfigReader;
 
 /**
@@ -34,7 +35,8 @@ public class ExtentReportManager {
             extent = new ExtentReports();
             extent.attachReporter(sparkReporter);
             // Informações do ambiente exibidas no painel do relatório
-            extent.setSystemInfo("API", ConfigReader.get("base.uri", "http://localhost:3000"));
+            extent.setSystemInfo("Ambiente", ConfigReader.get("env", "local"));
+            extent.setSystemInfo("API", ApiConfig.baseUri());
             extent.setSystemInfo("Versão da ServeRest", "3.2.2");
         }
         return extent;

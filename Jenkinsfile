@@ -33,6 +33,8 @@ pipeline {
     parameters {
         string(name: 'TAGS', defaultValue: 'regression',
                description: 'Tags do JUnit, sem @. Ex.: regression | smoke | login | usuarios | expected-failure')
+        choice(name: 'AMBIENTE', choices: ['local', 'staging', 'producao'],
+               description: 'Ambiente testado (local = ServeRest em Docker no próprio Jenkins)')
         booleanParam(name: 'ENVIAR_EMAIL', defaultValue: true,
                      description: 'Enviar o resultado por e-mail ao final (plugin Email Extension)')
     }
@@ -62,6 +64,7 @@ pipeline {
 
     stages {
         stage('Subir a ServeRest') {
+            when { expression { params.AMBIENTE == 'local' } }   // só sobe o container se for local
             steps {
                 // Remove um container que tenha sobrado de um build interrompido (se não existir, segue)
                 bat 'docker rm -f %SERVEREST_CONTAINER% 2>nul || exit /b 0'
@@ -98,8 +101,9 @@ pipeline {
                 // -Dmaven.test.failure.ignore=true: um cenário falhando não "quebra" o build;
                 // o resultado (instável/sucesso) é decidido pelo plugin JUnit no post.
                 // As aspas em volta do -Dgroups protegem os espaços e os símbolos & | ! no cmd do Windows.
-                bat "mvn -B clean test \"-Dgroups=${params.TAGS}\" " +
-                    "-Dbase.uri=http://localhost:%SERVEREST_PORTA% -Dmaven.test.failure.ignore=true"
+                bat "mvn -B clean test \"-Dgroups=${params.TAGS}\" -Denv=${params.AMBIENTE} " +
+                    "${params.AMBIENTE == 'local' ? '-Dbase.uri=http://localhost:%SERVEREST_PORTA%' : ''} " +
+                    "-Dmaven.test.failure.ignore=true"
             }
         }
     }
@@ -126,7 +130,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'email-recipients', variable: 'EMAIL_RECIPIENTS')]) {
                         emailext(
                             to: env.EMAIL_RECIPIENTS,
-                            subject: "[${status}] RestAssured + Cucumber (API) - ${params.TAGS} - build #${env.BUILD_NUMBER}",
+                            subject: "[${status}] RestAssured + Cucumber (API) - ${{ env.AMBIENTE }} - ${{ env.TAGS }} - build #${env.BUILD_NUMBER}",
                             mimeType: 'text/html',
                             attachmentsPattern: 'reports/*.html',
                             // \${TEST_COUNTS...} tem a barra para o Groovy não interpretar:
@@ -135,7 +139,7 @@ pipeline {
                                 <h2 style="color:${cor}">Execução ${status}</h2>
                                 <p>
                                   <b>Tags:</b> ${params.TAGS}<br>
-                                  <b>API:</b> ServeRest 3.2.2 (container Docker no Jenkins, porta ${env.SERVEREST_PORTA})<br>
+                                  <b>Ambiente:</b> ${params.AMBIENTE}<br>
                                   <b>Build:</b> #${env.BUILD_NUMBER} (${currentBuild.currentResult})
                                 </p>
                                 <table border="1" cellpadding="6" style="border-collapse:collapse">
